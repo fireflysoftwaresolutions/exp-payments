@@ -30,6 +30,7 @@ import java.util.UUID;
 
 /**
  * Calls the payments domain hub. A future BPM replaces this adapter.
+ * It does not import the ledger, the rail, the PSP, or the SCA client.
  */
 public final class HttpSagaAdapter implements DomainPaymentsPort {
 
@@ -44,25 +45,41 @@ public final class HttpSagaAdapter implements DomainPaymentsPort {
     }
 
     @Override
-    public JourneyContract.Movement move(JourneyContract.Request request) {
-        return exchange(HttpRequest.newBuilder(URI.create(baseUrl + "/api/v1/payments/movements"))
+    public JourneyContract.TryResult tryPayment(JourneyContract.Request request) {
+        return read(HttpRequest.newBuilder(URI.create(baseUrl + "/api/v1/payments/tries"))
                 .header("Content-Type", "application/json")
                 .POST(HttpRequest.BodyPublishers.ofString(write(request)))
-                .build());
+                .build(), JourneyContract.TryResult.class);
+    }
+
+    @Override
+    public JourneyContract.Movement confirm(UUID paymentId, String response) {
+        return read(HttpRequest.newBuilder(URI.create(baseUrl + "/api/v1/payments/" + paymentId + "/confirmations"))
+                .header("Content-Type", "application/json")
+                .POST(HttpRequest.BodyPublishers.ofString("{\"response\":" + jsonString(response) + "}"))
+                .build(), JourneyContract.Movement.class);
+    }
+
+    @Override
+    public JourneyContract.Movement cancel(UUID paymentId) {
+        return read(HttpRequest.newBuilder(URI.create(baseUrl + "/api/v1/payments/" + paymentId + "/cancellations"))
+                .POST(HttpRequest.BodyPublishers.noBody())
+                .build(), JourneyContract.Movement.class);
     }
 
     @Override
     public JourneyContract.Movement readStatus(UUID paymentId) {
-        return exchange(HttpRequest.newBuilder(URI.create(baseUrl + "/api/v1/payments/" + paymentId)).GET().build());
+        return read(HttpRequest.newBuilder(URI.create(baseUrl + "/api/v1/payments/" + paymentId)).GET().build(),
+                JourneyContract.Movement.class);
     }
 
-    private JourneyContract.Movement exchange(HttpRequest request) {
+    private <T> T read(HttpRequest request, Class<T> type) {
         try {
             HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
             if (response.statusCode() >= 400) {
                 throw new IllegalStateException("The payments domain returned HTTP " + response.statusCode() + ".");
             }
-            return json.readValue(response.body(), JourneyContract.Movement.class);
+            return json.readValue(response.body(), type);
         } catch (RuntimeException ex) {
             throw ex;
         } catch (Exception ex) {
@@ -76,5 +93,12 @@ public final class HttpSagaAdapter implements DomainPaymentsPort {
         } catch (Exception ex) {
             throw new IllegalStateException("The movement request could not be written.", ex);
         }
+    }
+
+    private static String jsonString(String value) {
+        if (value == null) {
+            return "null";
+        }
+        return "\"" + value.replace("\\", "\\\\").replace("\"", "\\\"") + "\"";
     }
 }

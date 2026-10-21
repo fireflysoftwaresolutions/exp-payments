@@ -36,14 +36,19 @@ public final class PaymentJourney {
         this.domain = domain;
     }
 
-    public JourneyContract.Movement transfer(String username, JourneyContract.Request request) {
+    public JourneyContract.TryResult tryPayment(String username, JourneyContract.Request request) {
         require(username, AccessPort.Action.CREATE);
-        return domain.move(request);
+        return domain.tryPayment(request);
     }
 
-    public JourneyContract.Movement inboundCredit(String username, JourneyContract.Request request) {
+    public JourneyContract.Movement confirm(String username, UUID paymentId, String response) {
         require(username, AccessPort.Action.CREATE);
-        return domain.move(request);
+        return domain.confirm(paymentId, response);
+    }
+
+    public JourneyContract.Movement cancel(String username, UUID paymentId) {
+        require(username, AccessPort.Action.CREATE);
+        return domain.cancel(paymentId);
     }
 
     public JourneyContract.Movement status(String username, UUID paymentId) {

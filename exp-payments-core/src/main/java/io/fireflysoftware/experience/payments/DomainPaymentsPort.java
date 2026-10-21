@@ -24,7 +24,11 @@ import java.util.UUID;
  */
 public interface DomainPaymentsPort {
 
-    JourneyContract.Movement move(JourneyContract.Request request);
+    JourneyContract.TryResult tryPayment(JourneyContract.Request request);
+
+    JourneyContract.Movement confirm(UUID paymentId, String response);
+
+    JourneyContract.Movement cancel(UUID paymentId);
 
     JourneyContract.Movement readStatus(UUID paymentId);
 }

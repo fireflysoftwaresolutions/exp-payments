@@ -84,6 +84,9 @@ public final class JourneyContract {
     ) {
     }
 
+    public record TryResult(UUID paymentId, UUID challengeId, String challengeValue, String phase) {
+    }
+
     public record Movement(
             UUID paymentId,
             Status status,
@@ -95,7 +98,8 @@ public final class JourneyContract {
             String syncReference,
             String failure,
             Posting posting,
-            Posting reversal
+            Posting reversal,
+            String phase
     ) {
     }
 }

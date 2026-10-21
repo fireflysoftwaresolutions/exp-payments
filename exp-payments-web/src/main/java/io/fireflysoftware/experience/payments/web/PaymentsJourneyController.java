@@ -43,20 +43,27 @@ public class PaymentsJourneyController {
         this.journey = journey;
     }
 
-    @PostMapping("/transfers")
+    @PostMapping("/tries")
     @ResponseStatus(HttpStatus.CREATED)
-    public JourneyContract.Movement transfer(
+    public JourneyContract.TryResult tryPayment(
             @RequestHeader(value = "X-Firefly-Username", required = false) String username,
             @RequestBody JourneyContract.Request request) {
-        return journey.transfer(username, request);
+        return journey.tryPayment(username, request);
     }
 
-    @PostMapping("/inbound-credits")
-    @ResponseStatus(HttpStatus.CREATED)
-    public JourneyContract.Movement inbound(
+    @PostMapping("/{paymentId}/confirmations")
+    public JourneyContract.Movement confirm(
             @RequestHeader(value = "X-Firefly-Username", required = false) String username,
-            @RequestBody JourneyContract.Request request) {
-        return journey.inboundCredit(username, request);
+            @PathVariable UUID paymentId,
+            @RequestBody Confirmation confirmation) {
+        return journey.confirm(username, paymentId, confirmation.response());
+    }
+
+    @PostMapping("/{paymentId}/cancellations")
+    public JourneyContract.Movement cancel(
+            @RequestHeader(value = "X-Firefly-Username", required = false) String username,
+            @PathVariable UUID paymentId) {
+        return journey.cancel(username, paymentId);
     }
 
     @GetMapping("/{paymentId}")
@@ -70,5 +77,8 @@ public class PaymentsJourneyController {
     @ResponseStatus(HttpStatus.FORBIDDEN)
     public Map<String, String> denied(AccessDeniedException exception) {
         return Map.of("reason", exception.getMessage());
+    }
+
+    public record Confirmation(String response) {
     }
 }
