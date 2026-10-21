@@ -1,0 +1,11 @@
+server:
+  port: ${SERVER_PORT:8102}
+
+firefly:
+  experience:
+    payments:
+      domain-base-url: ${PAYMENTS_DOMAIN_URL:http://localhost:8092}
+    identity:
+      adapter: sandbox
+    access:
+      adapter: sandbox
