@@ -42,7 +42,8 @@ public final class JourneyContract {
         INITIATED,
         COMPLETED,
         FAILED,
-        UNMATCHED
+        UNMATCHED,
+        CANCELLED
     }
 
     public enum Route {

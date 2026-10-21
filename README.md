@@ -13,7 +13,7 @@ Developed by the Firefly Software Foundation. [dev@fireflysoftware.io](mailto:de
 
 This is the payments journey. A person makes an internal transfer, sends an outbound payment, sees an inbound credit, and reads the status. It is not a copy of the domain hub, and it is not part of accounts.
 
-Each step resolves identity, checks access, and then calls one port: `DomainPaymentsPort`. `HttpSagaAdapter` is that port's adapter. It posts to the payments domain hub. A future BPM replaces `HttpSagaAdapter`. The experience service does not import the ledger, `library-rails`, `library-psps`, the payments core SDK, or the domain saga.
+Each step resolves identity, checks access, and then calls one port: `DomainPaymentsPort`. `SdkDomainPaymentsAdapter` is that port's adapter. It calls `domain-payments-sdk`. A future BPM replaces `SdkDomainPaymentsAdapter`. The experience service does not import the ledger, `library-rails`, `library-psps`, the payments core SDK, or the domain coordinator.
 
 `sample-journey` resolves to `11111111-1111-4111-8111-111111111111` and can create and read a payment. `denied-actor` resolves to `22222222-2222-4222-8222-222222222222` and receives `ACTOR_NOT_ENTITLED` before the domain port is called.
 
@@ -31,7 +31,7 @@ The domain hub decides the posting. In sandbox mode the hub completes an interna
 
 Send `X-Firefly-Username`. A blank user name is `sample-journey`.
 
-Identity calls `POST /api/v1/identity/subjects` when the identity adapter is the security-center adapter. Access calls `POST /api/v1/access/checks` for the payment resource. The sandbox adapters in this module answer those checks without a socket so the sample journey can run. Replace `SandboxIdentityAdapter` and `SandboxAccessAdapter` to call domain-core-security-center, and keep `HttpSagaAdapter` pointed at the payments domain.
+Identity calls `POST /api/v1/identity/subjects` when the identity adapter is the security-center adapter. Access calls `POST /api/v1/access/checks` for the payment resource. The sandbox adapters in this module answer those checks without a socket so the sample journey can run. Replace `SandboxIdentityAdapter` and `SandboxAccessAdapter` to call domain-core-security-center, and keep `SdkDomainPaymentsAdapter` pointed at the payments domain.
 
 ```yaml
 server:

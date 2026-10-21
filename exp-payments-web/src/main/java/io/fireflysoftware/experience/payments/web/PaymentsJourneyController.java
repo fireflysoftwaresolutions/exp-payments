@@ -29,6 +29,8 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
+import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
 
 import java.util.Map;
 import java.util.UUID;
@@ -45,32 +47,33 @@ public class PaymentsJourneyController {
 
     @PostMapping("/tries")
     @ResponseStatus(HttpStatus.CREATED)
-    public JourneyContract.TryResult tryPayment(
+    public Mono<JourneyContract.TryResult> tryPayment(
             @RequestHeader(value = "X-Firefly-Username", required = false) String username,
             @RequestBody JourneyContract.Request request) {
-        return journey.tryPayment(username, request);
+        return Mono.fromCallable(() -> journey.tryPayment(username, request)).subscribeOn(Schedulers.boundedElastic());
     }
 
     @PostMapping("/{paymentId}/confirmations")
-    public JourneyContract.Movement confirm(
+    public Mono<JourneyContract.Movement> confirm(
             @RequestHeader(value = "X-Firefly-Username", required = false) String username,
             @PathVariable UUID paymentId,
             @RequestBody Confirmation confirmation) {
-        return journey.confirm(username, paymentId, confirmation.response());
+        return Mono.fromCallable(() -> journey.confirm(username, paymentId, confirmation.response()))
+                .subscribeOn(Schedulers.boundedElastic());
     }
 
     @PostMapping("/{paymentId}/cancellations")
-    public JourneyContract.Movement cancel(
+    public Mono<JourneyContract.Movement> cancel(
             @RequestHeader(value = "X-Firefly-Username", required = false) String username,
             @PathVariable UUID paymentId) {
-        return journey.cancel(username, paymentId);
+        return Mono.fromCallable(() -> journey.cancel(username, paymentId)).subscribeOn(Schedulers.boundedElastic());
     }
 
     @GetMapping("/{paymentId}")
-    public JourneyContract.Movement status(
+    public Mono<JourneyContract.Movement> status(
             @RequestHeader(value = "X-Firefly-Username", required = false) String username,
             @PathVariable UUID paymentId) {
-        return journey.status(username, paymentId);
+        return Mono.fromCallable(() -> journey.status(username, paymentId)).subscribeOn(Schedulers.boundedElastic());
     }
 
     @ExceptionHandler(AccessDeniedException.class)

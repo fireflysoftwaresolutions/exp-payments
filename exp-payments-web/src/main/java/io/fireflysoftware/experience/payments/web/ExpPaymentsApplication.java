@@ -34,7 +34,7 @@ public class ExpPaymentsApplication {
 
     @Bean
     DomainPaymentsPort domainPaymentsPort(@Value("${firefly.experience.payments.domain-base-url}") String baseUrl) {
-        return new HttpSagaAdapter(baseUrl);
+        return new SdkDomainPaymentsAdapter(baseUrl);
     }
 
     @Bean
