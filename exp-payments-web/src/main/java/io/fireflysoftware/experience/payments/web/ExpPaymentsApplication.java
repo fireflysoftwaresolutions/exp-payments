@@ -18,12 +18,11 @@ package io.fireflysoftware.experience.payments.web;
 
 import io.fireflysoftware.experience.payments.DomainPaymentsPort;
 import io.fireflysoftware.experience.payments.PaymentJourney;
-import io.fireflysoftware.experience.payments.SandboxAccessAdapter;
-import io.fireflysoftware.experience.payments.SandboxIdentityAdapter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
+import org.springframework.web.reactive.function.client.WebClient;
 
 @SpringBootApplication(scanBasePackages = "io.fireflysoftware.experience.payments")
 public class ExpPaymentsApplication {
@@ -38,7 +37,16 @@ public class ExpPaymentsApplication {
     }
 
     @Bean
-    PaymentJourney paymentJourney(DomainPaymentsPort domain) {
-        return new PaymentJourney(new SandboxIdentityAdapter(), new SandboxAccessAdapter(), domain);
+    WebClient securityCenterWebClient(
+            @Value("${api-configuration.domain-platform.security-center.base-path:http://localhost:8085}") String basePath) {
+        return WebClient.builder().baseUrl(basePath).build();
+    }
+
+    @Bean
+    PaymentJourney paymentJourney(DomainPaymentsPort domain, WebClient securityCenterWebClient) {
+        return new PaymentJourney(
+                new HttpSecurityCenterAdapters.Identity(securityCenterWebClient),
+                new HttpSecurityCenterAdapters.Access(securityCenterWebClient),
+                domain);
     }
 }

@@ -1,11 +1,12 @@
 server:
   port: ${SERVER_PORT:8102}
 
+api-configuration:
+  domain-platform:
+    security-center:
+      base-path: ${SECURITY_CENTER_URL:http://localhost:8085}
+
 firefly:
   experience:
     payments:
       domain-base-url: ${PAYMENTS_DOMAIN_URL:http://localhost:8092}
-    identity:
-      adapter: sandbox
-    access:
-      adapter: sandbox
