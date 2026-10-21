@@ -18,11 +18,13 @@ package io.fireflysoftware.experience.payments.web;
 
 import io.fireflysoftware.experience.payments.DomainPaymentsPort;
 import io.fireflysoftware.experience.payments.PaymentJourney;
+import io.fireflysoftware.security.center.sdk.api.AccessControllerApi;
+import io.fireflysoftware.security.center.sdk.api.IdentityControllerApi;
+import io.fireflysoftware.security.center.sdk.invoker.ApiClient;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
-import org.springframework.web.reactive.function.client.WebClient;
 
 @SpringBootApplication(scanBasePackages = "io.fireflysoftware.experience.payments")
 public class ExpPaymentsApplication {
@@ -37,16 +39,31 @@ public class ExpPaymentsApplication {
     }
 
     @Bean
-    WebClient securityCenterWebClient(
+    IdentityControllerApi identityControllerApi(
             @Value("${api-configuration.domain-platform.security-center.base-path:http://localhost:8085}") String basePath) {
-        return WebClient.builder().baseUrl(basePath).build();
+        return new IdentityControllerApi(client(basePath));
     }
 
     @Bean
-    PaymentJourney paymentJourney(DomainPaymentsPort domain, WebClient securityCenterWebClient) {
+    AccessControllerApi accessControllerApi(
+            @Value("${api-configuration.domain-platform.security-center.base-path:http://localhost:8085}") String basePath) {
+        return new AccessControllerApi(client(basePath));
+    }
+
+    @Bean
+    PaymentJourney paymentJourney(DomainPaymentsPort domain,
+                                  IdentityControllerApi identityControllerApi,
+                                  AccessControllerApi accessControllerApi) {
         return new PaymentJourney(
-                new HttpSecurityCenterAdapters.Identity(securityCenterWebClient),
-                new HttpSecurityCenterAdapters.Access(securityCenterWebClient),
+                new HttpSecurityCenterAdapters.Identity(identityControllerApi),
+                new HttpSecurityCenterAdapters.Access(accessControllerApi),
                 domain);
+    }
+
+    private static ApiClient client(String basePath) {
+        ApiClient client = new ApiClient();
+        String trimmed = basePath.endsWith("/") ? basePath.substring(0, basePath.length() - 1) : basePath;
+        client.setBasePath(trimmed);
+        return client;
     }
 }

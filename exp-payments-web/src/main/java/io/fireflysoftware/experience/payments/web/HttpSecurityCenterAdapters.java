@@ -16,100 +16,93 @@
 
 package io.fireflysoftware.experience.payments.web;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import io.fireflysoftware.experience.payments.AccessDeniedException;
 import io.fireflysoftware.experience.payments.AccessPort;
 import io.fireflysoftware.experience.payments.IdentityPort;
-import org.springframework.web.reactive.function.client.WebClient;
-import reactor.core.publisher.Mono;
+import io.fireflysoftware.security.center.sdk.api.AccessControllerApi;
+import io.fireflysoftware.security.center.sdk.api.IdentityControllerApi;
+import io.fireflysoftware.security.center.sdk.model.IdentityRequest;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 
 import java.time.Duration;
-import java.util.LinkedHashMap;
-import java.util.Map;
 import java.util.UUID;
 
 /**
- * Identity and access for the running journey. Both calls go to domain-core-security-center.
+ * Identity and access for the running journey. Both calls go through domain-core-security-center.
  */
 final class HttpSecurityCenterAdapters {
 
     private static final Duration TIMEOUT = Duration.ofSeconds(10);
-    private static final ObjectMapper MAPPER = new ObjectMapper();
 
     private HttpSecurityCenterAdapters() {
     }
 
     static final class Identity implements IdentityPort {
 
-        private final WebClient webClient;
+        private final IdentityControllerApi api;
 
-        Identity(WebClient webClient) {
-            this.webClient = webClient;
+        Identity(IdentityControllerApi api) {
+            this.api = api;
         }
 
         @Override
         public Subject resolve(String username) {
             String name = username == null || username.isBlank() ? SAMPLE_USERNAME : username;
-            Map<String, String> body = new LinkedHashMap<>();
-            body.put("username", name);
-            String raw = webClient.post()
-                    .uri("/api/v1/identity/subjects")
-                    .bodyValue(body)
-                    .exchangeToMono(response -> {
-                        if (response.statusCode().value() == 404) {
-                            return Mono.error(new AccessDeniedException("ACTOR_UNKNOWN"));
-                        }
-                        if (response.statusCode().isError()) {
-                            return response.createException().flatMap(Mono::error);
-                        }
-                        return response.bodyToMono(String.class);
-                    })
-                    .block(TIMEOUT);
-            JsonNode node = read(raw);
-            if (node == null || node.path("actorId").asText().isBlank()) {
-                throw new AccessDeniedException("ACTOR_UNKNOWN");
+            try {
+                io.fireflysoftware.security.center.sdk.model.Subject subject = api
+                        .resolveSubject(new IdentityRequest().username(name))
+                        .block(TIMEOUT);
+                if (subject == null || subject.getActorId() == null || subject.getActorId().isBlank()) {
+                    throw new AccessDeniedException("ACTOR_UNKNOWN");
+                }
+                return new Subject(UUID.fromString(subject.getActorId()), name);
+            } catch (RuntimeException ex) {
+                if (status(ex) == 404) {
+                    throw new AccessDeniedException("ACTOR_UNKNOWN");
+                }
+                throw ex;
             }
-            return new Subject(UUID.fromString(node.path("actorId").asText()), name);
-        }
-    }
-
-    private static JsonNode read(String raw) {
-        try {
-            return raw == null || raw.isBlank() ? MAPPER.createObjectNode() : MAPPER.readTree(raw);
-        } catch (Exception exception) {
-            throw new IllegalStateException("SECURITY_CENTER_RESPONSE_UNREADABLE");
         }
     }
 
     static final class Access implements AccessPort {
 
-        private final WebClient webClient;
+        private final AccessControllerApi api;
 
-        Access(WebClient webClient) {
-            this.webClient = webClient;
+        Access(AccessControllerApi api) {
+            this.api = api;
         }
 
         @Override
         public Decision check(Request request) {
-            Map<String, String> body = new LinkedHashMap<>();
-            body.put("actorId", request.actorId().toString());
-            body.put("action", request.action().name());
-            body.put("resourceType", request.resourceType().name());
-            body.put("resourceId", request.resourceId().toString());
-            String raw = webClient.post()
-                    .uri("/api/v1/access/checks")
-                    .bodyValue(body)
-                    .retrieve()
-                    .bodyToMono(String.class)
+            io.fireflysoftware.security.center.sdk.model.AccessRequest body =
+                    new io.fireflysoftware.security.center.sdk.model.AccessRequest()
+                            .actorId(request.actorId().toString())
+                            .action(io.fireflysoftware.security.center.sdk.model.AccessRequest.ActionEnum
+                                    .fromValue(request.action().name()))
+                            .resourceType(io.fireflysoftware.security.center.sdk.model.AccessRequest.ResourceTypeEnum
+                                    .fromValue(request.resourceType().name()))
+                            .resourceId(request.resourceId().toString());
+            io.fireflysoftware.security.center.sdk.model.AccessDecision decision = api
+                    .decideAccess(body, UUID.randomUUID().toString())
                     .block(TIMEOUT);
-            JsonNode node = read(raw);
-            if (node == null) {
-                return Decision.denied("ACTOR_NOT_ENTITLED");
+            if (decision == null || !Boolean.TRUE.equals(decision.getAllowed())) {
+                String reason = decision == null || decision.getReasonCode() == null
+                        ? "ACTOR_NOT_ENTITLED" : decision.getReasonCode();
+                return Decision.denied(reason);
             }
-            boolean allowed = node.path("allowed").asBoolean(false);
-            String reason = node.path("reasonCode").asText(allowed ? "SANDBOX_GRANT" : "ACTOR_NOT_ENTITLED");
-            return allowed ? new Decision(true, reason) : Decision.denied(reason);
+            return new Decision(true, decision.getReasonCode() == null ? "SANDBOX_GRANT" : decision.getReasonCode());
         }
+    }
+
+    private static int status(Throwable error) {
+        Throwable current = error;
+        while (current != null) {
+            if (current instanceof WebClientResponseException http) {
+                return http.getStatusCode().value();
+            }
+            current = current.getCause();
+        }
+        return 0;
     }
 }
