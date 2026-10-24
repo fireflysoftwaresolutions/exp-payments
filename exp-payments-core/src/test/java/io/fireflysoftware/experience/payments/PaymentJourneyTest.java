@@ -16,6 +16,8 @@
 
 package io.fireflysoftware.experience.payments;
 
+import io.fireflysoftware.experience.payments.impl.PaymentJourneyServiceImpl;
+
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
@@ -37,7 +39,7 @@ class PaymentJourneyTest {
     @Test
     void sampleJourneyConfirmsOutboundWithTheDeliveredChallenge() {
         RecordingPort port = new RecordingPort();
-        PaymentJourney journey = new PaymentJourney(new SandboxIdentityAdapter(), new SandboxAccessAdapter(), port);
+        PaymentJourneyService journey = new PaymentJourneyServiceImpl(new SandboxIdentityAdapter(), new SandboxAccessAdapter(), port);
         JourneyContract.TryResult tried = journey.tryPayment(IdentityPort.SAMPLE_USERNAME, outbound());
         assertNotNull(tried.challengeId());
         assertNotEquals("sandbox", tried.challengeValue());
@@ -54,7 +56,7 @@ class PaymentJourneyTest {
     @Test
     void internalTryHasNoChallenge() {
         RecordingPort port = new RecordingPort();
-        PaymentJourney journey = new PaymentJourney(new SandboxIdentityAdapter(), new SandboxAccessAdapter(), port);
+        PaymentJourneyService journey = new PaymentJourneyServiceImpl(new SandboxIdentityAdapter(), new SandboxAccessAdapter(), port);
         JourneyContract.TryResult tried = journey.tryPayment(IdentityPort.SAMPLE_USERNAME, internal());
         assertNull(tried.challengeId());
         assertNull(tried.challengeValue());
@@ -63,7 +65,7 @@ class PaymentJourneyTest {
     @Test
     void deniedActorNeverReachesTry() {
         RecordingPort port = new RecordingPort();
-        PaymentJourney journey = new PaymentJourney(new SandboxIdentityAdapter(), new SandboxAccessAdapter(), port);
+        PaymentJourneyService journey = new PaymentJourneyServiceImpl(new SandboxIdentityAdapter(), new SandboxAccessAdapter(), port);
         AccessDeniedException denied = assertThrows(AccessDeniedException.class,
                 () -> journey.tryPayment(IdentityPort.DENIED_USERNAME, outbound()));
         assertEquals("ACTOR_NOT_ENTITLED", denied.getMessage());
@@ -129,5 +131,11 @@ class PaymentJourneyTest {
             return new JourneyContract.Movement(paymentId, JourneyContract.Status.COMPLETED, null, null, null, null,
                     false, null, null, null, null, "CONFIRMED");
         }
+    }
+
+    @Test void businessJourneyHasServiceInterfaceAndImplementation() throws Exception {
+        var service=Class.forName("io.fireflysoftware.experience.payments.PaymentJourneyService");
+        assertTrue(service.isInterface());
+        assertTrue(service.isAssignableFrom(Class.forName("io.fireflysoftware.experience.payments.impl.PaymentJourneyServiceImpl")));
     }
 }
