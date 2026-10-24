@@ -14,7 +14,9 @@
  * limitations under the License.
  */
 
-package io.fireflysoftware.experience.payments;
+package io.fireflysoftware.experience.payments.impl;
+
+import io.fireflysoftware.experience.payments.*;
 
 import java.util.UUID;
 
@@ -22,15 +24,13 @@ import java.util.UUID;
  * A person makes an internal transfer, sends an outbound payment, sees an inbound credit, and reads status.
  * Each step is identity, then access, then {@link DomainPaymentsPort}.
  */
-public final class PaymentJourney {
-
-    public static final UUID PAYMENT_RESOURCE = UUID.fromString("10000000-0000-4000-8000-0000000000a1");
+public final class PaymentJourneyServiceImpl implements PaymentJourneyService {
 
     private final IdentityPort identity;
     private final AccessPort access;
     private final DomainPaymentsPort domain;
 
-    public PaymentJourney(IdentityPort identity, AccessPort access, DomainPaymentsPort domain) {
+    public PaymentJourneyServiceImpl(IdentityPort identity, AccessPort access, DomainPaymentsPort domain) {
         this.identity = identity;
         this.access = access;
         this.domain = domain;

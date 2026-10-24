@@ -1,0 +1,693 @@
+openapi: 3.0.1
+info:
+  title: exp-payments API
+  description: exp-payments API Documentation
+  contact:
+    name: Development Team
+    url: https://getfirefly.io
+    email: developers@getfirefly.io
+  license:
+    name: Apache 2.0
+    url: https://www.apache.org/licenses/LICENSE-2.0
+  version: 1.0.0
+servers:
+- url: http://localhost:18080
+  description: Generated server url
+paths:
+  /api/v1/tenants/{tenant}/internal-payments/{paymentId}/recovery:
+    post:
+      tags:
+      - Managed Payment Experiences
+      operationId: recoverManagedPaymentExperience
+      parameters:
+      - name: tenant
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: paymentId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Recovery"
+        required: true
+      responses:
+        "200":
+          description: Current authorized financial receipt
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/View"
+        "202":
+          description: Recovery retained with pending or uncertain effect
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/View"
+      x-disable-idempotency: true
+  /api/v1/tenants/{tenant}/internal-payments/{paymentId}/decisions:
+    post:
+      tags:
+      - Managed Payment Experiences
+      operationId: decideManagedPaymentExperience
+      parameters:
+      - name: tenant
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: paymentId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Decision"
+        required: true
+      responses:
+        "200":
+          description: Current authorized financial receipt
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/View"
+        "202":
+          description: Decision retained with pending or uncertain effect
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/View"
+      x-disable-idempotency: true
+  /api/v1/tenants/{tenant}/internal-payments:
+    post:
+      tags:
+      - Managed Payment Experiences
+      operationId: createManagedPaymentExperience
+      parameters:
+      - name: tenant
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Create"
+        required: true
+      responses:
+        "201":
+          description: New retained instruction; explicit financial state
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/View"
+        "200":
+          description: Current authorized owner replay
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/View"
+      x-disable-idempotency: true
+  /api/v1/payments/{paymentId}/confirmations:
+    post:
+      tags:
+      - payments-journey-controller
+      operationId: confirm
+      parameters:
+      - name: X-Firefly-Username
+        in: header
+        required: false
+        schema:
+          type: string
+      - name: paymentId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: X-Idempotency-Key
+        in: header
+        description: "Optional retry key for scoped POST, PUT, PATCH, and DELETE response\
+          \ reuse. Safe methods ignore it. Reuse requires configured trusted identity\
+          \ and namespace; changed input returns 409. Business effects require durable\
+          \ application idempotency."
+        required: false
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Confirmation"
+        required: true
+      responses:
+        "403":
+          description: Forbidden
+          content:
+            '*/*':
+              schema:
+                type: object
+                additionalProperties:
+                  type: string
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/Movement"
+  /api/v1/payments/{paymentId}/cancellations:
+    post:
+      tags:
+      - payments-journey-controller
+      operationId: cancel
+      parameters:
+      - name: X-Firefly-Username
+        in: header
+        required: false
+        schema:
+          type: string
+      - name: paymentId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: X-Idempotency-Key
+        in: header
+        description: "Optional retry key for scoped POST, PUT, PATCH, and DELETE response\
+          \ reuse. Safe methods ignore it. Reuse requires configured trusted identity\
+          \ and namespace; changed input returns 409. Business effects require durable\
+          \ application idempotency."
+        required: false
+        schema:
+          type: string
+      responses:
+        "403":
+          description: Forbidden
+          content:
+            '*/*':
+              schema:
+                type: object
+                additionalProperties:
+                  type: string
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/Movement"
+  /api/v1/payments/tries:
+    post:
+      tags:
+      - payments-journey-controller
+      operationId: tryPayment
+      parameters:
+      - name: X-Firefly-Username
+        in: header
+        required: false
+        schema:
+          type: string
+      - name: X-Idempotency-Key
+        in: header
+        description: "Optional retry key for scoped POST, PUT, PATCH, and DELETE response\
+          \ reuse. Safe methods ignore it. Reuse requires configured trusted identity\
+          \ and namespace; changed input returns 409. Business effects require durable\
+          \ application idempotency."
+        required: false
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Request"
+        required: true
+      responses:
+        "403":
+          description: Forbidden
+          content:
+            '*/*':
+              schema:
+                type: object
+                additionalProperties:
+                  type: string
+        "201":
+          description: Created
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/TryResult"
+  /api/v1/tenants/{tenant}/internal-payments/{paymentId}:
+    get:
+      tags:
+      - Managed Payment Experiences
+      operationId: getManagedPaymentExperience
+      parameters:
+      - name: tenant
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: paymentId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          description: Current authorized retained financial receipt
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/View"
+      x-disable-idempotency: true
+  /api/v1/tenants/{tenant}/internal-payments/{paymentId}/history:
+    get:
+      tags:
+      - Managed Payment Experiences
+      operationId: getManagedPaymentExperienceHistory
+      parameters:
+      - name: tenant
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: paymentId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: afterVersion
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int64
+          default: -1
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 25
+      responses:
+        "200":
+          description: Bounded current-authorized retained business history
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/HistoryPage"
+      x-disable-idempotency: true
+  /api/v1/payments/{paymentId}:
+    get:
+      tags:
+      - payments-journey-controller
+      operationId: status
+      parameters:
+      - name: X-Firefly-Username
+        in: header
+        required: false
+        schema:
+          type: string
+      - name: paymentId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: X-Idempotency-Key
+        in: header
+        description: "Optional retry key for scoped POST, PUT, PATCH, and DELETE response\
+          \ reuse. Safe methods ignore it. Reuse requires configured trusted identity\
+          \ and namespace; changed input returns 409. Business effects require durable\
+          \ application idempotency."
+        required: false
+        schema:
+          type: string
+      responses:
+        "403":
+          description: Forbidden
+          content:
+            '*/*':
+              schema:
+                type: object
+                additionalProperties:
+                  type: string
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/Movement"
+components:
+  schemas:
+    Recovery:
+      required:
+      - actionId
+      - expectedVersion
+      type: object
+      properties:
+        actionId:
+          type: string
+          format: uuid
+        expectedVersion:
+          type: integer
+          format: int64
+      additionalProperties: false
+    View:
+      type: object
+      properties:
+        paymentId:
+          type: string
+          format: uuid
+        createActionId:
+          type: string
+          format: uuid
+        tenant:
+          type: string
+        sourceAccountId:
+          type: string
+          format: uuid
+        destinationAccountId:
+          type: string
+          format: uuid
+        amount:
+          type: string
+        currency:
+          type: string
+        currencyScale:
+          type: integer
+          format: int32
+        currencyPolicy:
+          type: string
+        ttlSeconds:
+          type: integer
+          format: int32
+        customerNotAfterEpochMillis:
+          type: integer
+          format: int64
+        notAfterEpochMillis:
+          type: integer
+          format: int64
+        initiator:
+          type: string
+        state:
+          type: string
+          enum:
+          - RECEIVED
+          - RESERVING
+          - RESERVED
+          - COMMITTING
+          - CANCELLING
+          - COMPLETED
+          - REVERSED
+          - CANCELLED
+          - EXPIRED
+          - RECOVERY_REQUIRED
+        version:
+          type: integer
+          format: int64
+        reservationId:
+          type: string
+          format: uuid
+        postingId:
+          type: string
+          format: uuid
+        reversalId:
+          type: string
+          format: uuid
+        absenceReceiptId:
+          type: string
+          format: uuid
+        ledgerVersion:
+          type: integer
+          format: int64
+        observedAt:
+          type: string
+          format: date-time
+        pendingEffectId:
+          type: string
+          format: uuid
+        recoveryCode:
+          type: string
+        ledgerState:
+          type: string
+        reservationExpiresAt:
+          type: string
+          format: date-time
+    Decision:
+      required:
+      - actionId
+      - expectedVersion
+      - kind
+      type: object
+      properties:
+        actionId:
+          type: string
+          format: uuid
+        expectedVersion:
+          type: integer
+          format: int64
+        kind:
+          type: string
+          enum:
+          - CONFIRM
+          - CANCEL
+      additionalProperties: false
+    Create:
+      required:
+      - actionId
+      - amount
+      - currency
+      - destinationAccountId
+      - sourceAccountId
+      - ttlSeconds
+      type: object
+      properties:
+        actionId:
+          type: string
+          format: uuid
+        sourceAccountId:
+          type: string
+          format: uuid
+        destinationAccountId:
+          type: string
+          format: uuid
+        amount:
+          type: number
+        currency:
+          type: string
+        ttlSeconds:
+          type: integer
+          format: int32
+        customerNotAfterEpochMillis:
+          type: integer
+          format: int64
+      additionalProperties: false
+    Confirmation:
+      type: object
+      properties:
+        response:
+          type: string
+    Leg:
+      type: object
+      properties:
+        accountId:
+          type: string
+          format: uuid
+        accountSpaceId:
+          type: string
+          format: uuid
+        side:
+          type: string
+          enum:
+          - DEBIT
+          - CREDIT
+        amount:
+          type: number
+        currency:
+          type: string
+    Movement:
+      type: object
+      properties:
+        paymentId:
+          type: string
+          format: uuid
+        status:
+          type: string
+          enum:
+          - INITIATED
+          - COMPLETED
+          - FAILED
+          - UNMATCHED
+          - CANCELLED
+        scheme:
+          type: string
+          enum:
+          - INTERNAL_TRANSFER
+          - SPACE_TRANSFER
+          - DOMESTIC_OUTBOUND
+          - INTERNATIONAL_OUTBOUND
+          - PSP_PAYOUT
+          - RAIL_INBOUND
+          - PSP_INBOUND
+        route:
+          type: string
+          enum:
+          - INTERNAL_BOOK
+          - OUTBOUND_RAIL
+          - OUTBOUND_PSP
+          - INBOUND_RAIL
+          - INBOUND_PSP
+        idempotencyKey:
+          type: string
+        thirdPartyReference:
+          type: string
+        thirdPartySynced:
+          type: boolean
+        syncReference:
+          type: string
+        failure:
+          type: string
+        posting:
+          $ref: "#/components/schemas/Posting"
+        reversal:
+          $ref: "#/components/schemas/Posting"
+        phase:
+          type: string
+    Posting:
+      type: object
+      properties:
+        transactionId:
+          type: string
+          format: uuid
+        idempotencyKey:
+          type: string
+        currency:
+          type: string
+        legs:
+          type: array
+          items:
+            $ref: "#/components/schemas/Leg"
+    Request:
+      type: object
+      properties:
+        scheme:
+          type: string
+          enum:
+          - INTERNAL_TRANSFER
+          - SPACE_TRANSFER
+          - DOMESTIC_OUTBOUND
+          - INTERNATIONAL_OUTBOUND
+          - PSP_PAYOUT
+          - RAIL_INBOUND
+          - PSP_INBOUND
+        idempotencyKey:
+          type: string
+        amount:
+          type: number
+        currency:
+          type: string
+        partyId:
+          type: string
+          format: uuid
+        contractId:
+          type: string
+          format: uuid
+        sourceAccountId:
+          type: string
+          format: uuid
+        destinationAccountId:
+          type: string
+          format: uuid
+        sourceSpaceId:
+          type: string
+          format: uuid
+        destinationSpaceId:
+          type: string
+          format: uuid
+        spaceType:
+          type: string
+        paymentMethodId:
+          type: string
+          format: uuid
+        externalAccountName:
+          type: string
+        externalIban:
+          type: string
+        externalBic:
+          type: string
+        thirdPartyReference:
+          type: string
+    TryResult:
+      type: object
+      properties:
+        paymentId:
+          type: string
+          format: uuid
+        challengeId:
+          type: string
+          format: uuid
+        challengeValue:
+          type: string
+        phase:
+          type: string
+    HistoryEvent:
+      type: object
+      properties:
+        version:
+          type: integer
+          format: int64
+        type:
+          type: string
+        actor:
+          type: string
+        recordedAt:
+          type: string
+          format: date-time
+        actionId:
+          type: string
+          format: uuid
+        effectId:
+          type: string
+          format: uuid
+        state:
+          type: string
+          enum:
+          - RECEIVED
+          - RESERVING
+          - RESERVED
+          - COMMITTING
+          - CANCELLING
+          - COMPLETED
+          - REVERSED
+          - CANCELLED
+          - EXPIRED
+          - RECOVERY_REQUIRED
+        postingId:
+          type: string
+          format: uuid
+        reversalId:
+          type: string
+          format: uuid
+    HistoryPage:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/HistoryEvent"

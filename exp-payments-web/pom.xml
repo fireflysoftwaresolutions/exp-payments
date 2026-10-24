@@ -13,7 +13,24 @@
     <artifactId>exp-payments-web</artifactId>
     <name>exp-payments-web</name>
 
+    <properties>
+        <openapi.gen.skip>false</openapi.gen.skip>
+        <openapi.gen.mainClass>io.fireflysoftware.experience.payments.web.ExpPaymentsApplication</openapi.gen.mainClass>
+    </properties>
+
     <dependencies>
+        <dependency>
+            <groupId>org.fireflyframework</groupId>
+            <artifactId>fireflyframework-security-resource-server</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.fireflyframework</groupId>
+            <artifactId>fireflyframework-web</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-oauth2-resource-server</artifactId>
+        </dependency>
         <dependency>
             <groupId>io.fireflysoftware</groupId>
             <artifactId>exp-payments-core</artifactId>
@@ -48,6 +65,13 @@
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>repackage</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>
