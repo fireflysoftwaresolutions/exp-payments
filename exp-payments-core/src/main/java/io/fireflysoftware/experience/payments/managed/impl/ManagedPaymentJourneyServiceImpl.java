@@ -146,9 +146,11 @@ public final class ManagedPaymentJourneyServiceImpl implements ManagedPaymentJou
                             || input.expectedVersion() < 0)
                         return Mono.error(fail(400, "EXACT_MANAGED_PAYMENT_DECISION_REQUIRED"));
                     String action =
-                            input.kind() == DecisionKind.CONFIRM
-                                    ? "payments:confirm"
-                                    : "payments:cancel";
+                            switch (input.kind()) {
+                                case CONFIRM -> "payments:confirm";
+                                case CANCEL -> "payments:cancel";
+                                case REVERSE -> "payments:reverse";
+                            };
                     return protectedView(tenant, payment, action)
                             .flatMap(
                                     before ->
@@ -164,11 +166,11 @@ public final class ManagedPaymentJourneyServiceImpl implements ManagedPaymentJou
                                                                         "payments:coordinate",
                                                                         "funds:read",
                                                                         "funds:reconcile",
-                                                                        input.kind()
-                                                                                        == DecisionKind
-                                                                                                .CONFIRM
-                                                                                ? "funds:commit"
-                                                                                : "funds:release");
+                                                                        switch (input.kind()) {
+                                                                            case CONFIRM -> "funds:commit";
+                                                                            case CANCEL -> "funds:release";
+                                                                            case REVERSE -> "funds:reverse";
+                                                                        });
                                                                 // The retained owner action decides
                                                                 // replay/CAS against the original
                                                                 // expected version.

@@ -161,7 +161,7 @@ class ManagedPaymentJourneyTest {
                         DECISION.replace("\"expectedVersion\":2,", ""),
                         DECISION.replace(":2", ":2.0"),
                         DECISION.replace(":2", ":\"2\""),
-                        DECISION.replace("CONFIRM", "REVERSE"),
+                        DECISION.replace("CONFIRM", "UNKNOWN_DECISION"),
                         DECISION.replace("}", ",\"expectedVersion\":2}"),
                         DECISION.replace("}", ",\"postingId\":\"" + SOURCE + "\"}")))
             rejects("decodeDecision", raw);
@@ -291,11 +291,13 @@ class ManagedPaymentJourneyTest {
                         "payments:coordinate",
                         "payments:confirm",
                         "payments:cancel",
+                        "payments:reverse",
                         "payments:recover",
                         "funds:read",
                         "funds:reserve",
                         "funds:commit",
                         "funds:release",
+                        "funds:reverse",
                         "funds:reconcile",
                         "funds:expire"),
                 List.of(SOURCE, TARGET),
@@ -386,6 +388,26 @@ class ManagedPaymentJourneyTest {
         assertThat(ManagedPaymentAccessTest.with(work, actor()).block()).isEqualTo(owner.current);
         assertThat(owner.decision.actionId()).isEqualTo(UUID.fromString(ACTION));
         assertThat(owner.decision.expectedVersion()).isEqualTo(2);
+    }
+
+    @Test
+    void reverseDecisionKeepsOriginalActionVersionAndIndependentCurrentPermission() {
+        Owner owner = new Owner();
+        owner.current = ownerView("12.30", "native-policy", DEADLINE, 8);
+        owner.after = owner.current;
+        var actions = new ArrayList<String>();
+        var journey = journey(owner, (principal, action, resource, context) -> {
+            actions.add(action);
+            return reactor.core.publisher.Mono.just(org.fireflyframework.security.api.domain.Decision.permit());
+        });
+        var input = (ManagedPaymentContracts.Decision) decode("decodeDecision", DECISION.replace("CONFIRM", "REVERSE"));
+        var work = operation(journey, "decide", new Class<?>[] {
+                String.class, UUID.class, ManagedPaymentContracts.Decision.class}, "owned", PAYMENT, input);
+        assertThat(ManagedPaymentAccessTest.with(work, actor()).block()).isEqualTo(owner.current);
+        assertThat(owner.decision.actionId()).isEqualTo(UUID.fromString(ACTION));
+        assertThat(owner.decision.expectedVersion()).isEqualTo(2);
+        assertThat(owner.decision.kind().name()).isEqualTo("REVERSE");
+        assertThat(actions).contains("payments:reverse").doesNotContain("payments:cancel");
     }
 
     @Test

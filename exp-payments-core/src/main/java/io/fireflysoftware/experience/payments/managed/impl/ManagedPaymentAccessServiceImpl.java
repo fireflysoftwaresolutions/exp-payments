@@ -68,6 +68,7 @@ public final class ManagedPaymentAccessServiceImpl implements ManagedPaymentAcce
                                                     "payments:read",
                                                     "payments:confirm",
                                                     "payments:cancel",
+                                                    "payments:reverse",
                                                     "payments:recover")
                                             .contains(action))
                                 return Mono.error(fail(400, "EXACT_PAYMENT_POLICY_SCOPE_REQUIRED"));

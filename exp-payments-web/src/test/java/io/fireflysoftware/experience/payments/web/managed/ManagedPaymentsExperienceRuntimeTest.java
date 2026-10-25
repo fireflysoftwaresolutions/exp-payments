@@ -231,7 +231,7 @@ class ManagedPaymentsExperienceRuntimeTest {
                         decision.replace(":2", ":2.0"),
                         decision.replace(":2", ":\"2\""),
                         decision.replace("}", ",\"kind\":\"CONFIRM\"}"),
-                        decision.replace("CONFIRM", "REVERSE")))
+                        decision.replace("CONFIRM", "UNKNOWN_DECISION")))
             post(ROOT + "/" + PAYMENT + "/decisions", body, valid()).expected(400);
         for (String body :
                 List.of(

@@ -54,7 +54,8 @@ public final class ManagedPaymentContracts {
 
     public enum DecisionKind {
         CONFIRM,
-        CANCEL
+        CANCEL,
+        REVERSE
     }
 
     @Schema(
@@ -74,6 +75,7 @@ public final class ManagedPaymentContracts {
         COMMITTING,
         CANCELLING,
         COMPLETED,
+        REVERSING,
         REVERSED,
         CANCELLED,
         EXPIRED,

@@ -161,7 +161,11 @@ public final class SdkManagedDomainPaymentsAdapter implements ManagedDomainPayme
 
     @Override
     public Mono<View> decide(String tenant, View before, Decision in) {
-        String scope = in.kind() == DecisionKind.CONFIRM ? "payments:confirm" : "payments:cancel";
+        String scope = switch (in.kind()) {
+            case CONFIRM -> "payments:confirm";
+            case CANCEL -> "payments:cancel";
+            case REVERSE -> "payments:reverse";
+        };
         return safe(
                 () ->
                         client(
@@ -175,9 +179,11 @@ public final class SdkManagedDomainPaymentsAdapter implements ManagedDomainPayme
                                                 "payments:coordinate",
                                                 "funds:read",
                                                 "funds:reconcile",
-                                                in.kind() == DecisionKind.CONFIRM
-                                                        ? "funds:commit"
-                                                        : "funds:release"))
+                                                switch (in.kind()) {
+                                                    case CONFIRM -> "funds:commit";
+                                                    case CANCEL -> "funds:release";
+                                                    case REVERSE -> "funds:reverse";
+                                                }))
                                 .flatMap(
                                         api ->
                                                 api.decideManagedPaymentJourney(
