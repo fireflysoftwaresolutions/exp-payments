@@ -18,7 +18,7 @@ package io.fireflysoftware.experience.payments.web;
 
 import io.fireflysoftware.experience.payments.AccessDeniedException;
 import io.fireflysoftware.experience.payments.JourneyContract;
-import io.fireflysoftware.experience.payments.PaymentJourney;
+import io.fireflysoftware.experience.payments.PaymentJourneyService;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -39,9 +39,9 @@ import java.util.UUID;
 @RequestMapping("/api/v1/payments")
 public class PaymentsJourneyController {
 
-    private final PaymentJourney journey;
+    private final PaymentJourneyService journey;
 
-    public PaymentsJourneyController(PaymentJourney journey) {
+    public PaymentsJourneyController(PaymentJourneyService journey) {
         this.journey = journey;
     }
 
