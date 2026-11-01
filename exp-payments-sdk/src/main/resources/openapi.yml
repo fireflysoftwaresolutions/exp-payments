@@ -1,4 +1,4 @@
-openapi: 3.0.1
+openapi: 3.1.0
 info:
   title: exp-payments API
   description: exp-payments API Documentation
@@ -11,8 +11,8 @@ info:
     url: https://www.apache.org/licenses/LICENSE-2.0
   version: 1.0.0
 servers:
-- url: http://localhost:18080
-  description: Generated server url
+- url: http://localhost:57953
+  description: Local Development Server
 paths:
   /api/v1/tenants/{tenant}/internal-payments/{paymentId}/recovery:
     post:
@@ -50,6 +50,8 @@ paths:
             '*/*':
               schema:
                 $ref: "#/components/schemas/View"
+      security:
+      - managedPaymentBearer: []
       x-disable-idempotency: true
   /api/v1/tenants/{tenant}/internal-payments/{paymentId}/decisions:
     post:
@@ -87,6 +89,8 @@ paths:
             '*/*':
               schema:
                 $ref: "#/components/schemas/View"
+      security:
+      - managedPaymentBearer: []
       x-disable-idempotency: true
   /api/v1/tenants/{tenant}/internal-payments:
     post:
@@ -118,6 +122,8 @@ paths:
             '*/*':
               schema:
                 $ref: "#/components/schemas/View"
+      security:
+      - managedPaymentBearer: []
       x-disable-idempotency: true
   /api/v1/payments/{paymentId}/confirmations:
     post:
@@ -272,6 +278,8 @@ paths:
             '*/*':
               schema:
                 $ref: "#/components/schemas/View"
+      security:
+      - managedPaymentBearer: []
       x-disable-idempotency: true
   /api/v1/tenants/{tenant}/internal-payments/{paymentId}/history:
     get:
@@ -311,6 +319,8 @@ paths:
             '*/*':
               schema:
                 $ref: "#/components/schemas/HistoryPage"
+      security:
+      - managedPaymentBearer: []
       x-disable-idempotency: true
   /api/v1/payments/{paymentId}:
     get:
@@ -356,10 +366,8 @@ paths:
 components:
   schemas:
     Recovery:
-      required:
-      - actionId
-      - expectedVersion
       type: object
+      additionalProperties: false
       properties:
         actionId:
           type: string
@@ -367,7 +375,9 @@ components:
         expectedVersion:
           type: integer
           format: int64
-      additionalProperties: false
+      required:
+      - actionId
+      - expectedVersion
     View:
       type: object
       properties:
@@ -451,11 +461,8 @@ components:
           type: string
           format: date-time
     Decision:
-      required:
-      - actionId
-      - expectedVersion
-      - kind
       type: object
+      additionalProperties: false
       properties:
         actionId:
           type: string
@@ -469,16 +476,13 @@ components:
           - CONFIRM
           - CANCEL
           - REVERSE
-      additionalProperties: false
-    Create:
       required:
       - actionId
-      - amount
-      - currency
-      - destinationAccountId
-      - sourceAccountId
-      - ttlSeconds
+      - expectedVersion
+      - kind
+    Create:
       type: object
+      additionalProperties: false
       properties:
         actionId:
           type: string
@@ -499,7 +503,13 @@ components:
         customerNotAfterEpochMillis:
           type: integer
           format: int64
-      additionalProperties: false
+      required:
+      - actionId
+      - amount
+      - currency
+      - destinationAccountId
+      - sourceAccountId
+      - ttlSeconds
     Confirmation:
       type: object
       properties:
@@ -694,3 +704,8 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/HistoryEvent"
+  securitySchemes:
+    managedPaymentBearer:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
