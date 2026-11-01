@@ -185,6 +185,37 @@ class ManagedPaymentsExperienceRuntimeTest {
     }
 
     @Test
+    void actualProducedContractDeclaresBearerOnEveryManagedOperationWithoutOwnerInvocation()
+            throws Exception {
+        var body =
+                client().get()
+                        .uri("/v3/api-docs")
+                        .exchange()
+                        .expectStatus()
+                        .isOk()
+                        .expectBody(String.class)
+                        .returnResult()
+                        .getResponseBody();
+        assertThat(body).isNotBlank();
+        var spec = new com.fasterxml.jackson.databind.ObjectMapper().readTree(body);
+        var scheme = spec.path("components").path("securitySchemes").path("managedPaymentBearer");
+        assertThat(scheme.path("type").asText()).isEqualTo("http");
+        assertThat(scheme.path("scheme").asText()).isEqualTo("bearer");
+        assertThat(scheme.path("bearerFormat").asText()).isEqualTo("JWT");
+        for (String suffix : List.of("", "/{paymentId}", "/{paymentId}/history",
+                "/{paymentId}/decisions", "/{paymentId}/recovery")) {
+            var method = suffix.isEmpty() || suffix.endsWith("decisions")
+                    || suffix.endsWith("recovery") ? "post" : "get";
+            var operation = spec.path("paths")
+                    .path("/api/v1/tenants/{tenant}/internal-payments" + suffix).path(method);
+            assertThat(operation.path("security").findValues("managedPaymentBearer"))
+                    .as(suffix + " bearer requirement").hasSize(1);
+        }
+        assertThat(owner.calls.get()).isZero();
+        org.mockito.Mockito.verifyNoInteractions(legacy);
+    }
+
+    @Test
     void actualHttpPreservesTypedOwnerIntentAndNoSession() {
         var response = post(ROOT, CREATE, valid()).expected(201);
         assertThat(response.headers.containsHeader("Set-Cookie")).isFalse();

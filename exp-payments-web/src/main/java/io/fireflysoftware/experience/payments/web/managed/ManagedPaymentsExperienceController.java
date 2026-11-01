@@ -39,6 +39,12 @@ import java.util.*;
 @RestController
 @RequestMapping("/api/v1/tenants/{tenant}/internal-payments")
 @Tag(name = "Managed Payment Experiences")
+@io.swagger.v3.oas.annotations.security.SecurityRequirement(name = "managedPaymentBearer")
+@io.swagger.v3.oas.annotations.security.SecurityScheme(
+        name = "managedPaymentBearer",
+        type = io.swagger.v3.oas.annotations.enums.SecuritySchemeType.HTTP,
+        scheme = "bearer",
+        bearerFormat = "JWT")
 public class ManagedPaymentsExperienceController {
     private final ManagedPaymentJourneyService journey;
 
