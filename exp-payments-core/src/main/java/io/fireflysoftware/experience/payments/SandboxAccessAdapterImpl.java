@@ -16,7 +16,7 @@
 
 package io.fireflysoftware.experience.payments;
 
-public final class SandboxAccessAdapter implements AccessPort {
+public final class SandboxAccessAdapterImpl implements AccessPort {
 
     @Override
     public Decision check(Request request) {

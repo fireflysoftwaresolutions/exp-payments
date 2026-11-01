@@ -14,19 +14,22 @@
  * limitations under the License.
  */
 
-package io.fireflysoftware.experience.payments;
+package io.fireflysoftware.experience.payments.managed;
 
-public final class SandboxIdentityAdapter implements IdentityPort {
+import io.fireflysoftware.experience.payments.managed.ManagedPaymentContracts.*;
 
-    @Override
-    public Subject resolve(String username) {
-        String name = username == null || username.isBlank() ? SAMPLE_USERNAME : username;
-        if (SAMPLE_USERNAME.equals(name)) {
-            return new Subject(SAMPLE_ACTOR, name);
-        }
-        if (DENIED_USERNAME.equals(name)) {
-            return new Subject(DENIED_ACTOR, name);
-        }
-        throw new AccessDeniedException("ACTOR_UNKNOWN");
-    }
+import reactor.core.publisher.Mono;
+
+import java.util.UUID;
+
+public interface ManagedDomainPaymentsPort {
+    Mono<Acceptance> create(String tenant, Create input);
+
+    Mono<View> read(String tenant, UUID payment);
+
+    Mono<HistoryPage> history(String tenant, View payment, long afterVersion, int limit);
+
+    Mono<View> decide(String tenant, View payment, Decision input);
+
+    Mono<View> recover(String tenant, View payment, Recovery input);
 }

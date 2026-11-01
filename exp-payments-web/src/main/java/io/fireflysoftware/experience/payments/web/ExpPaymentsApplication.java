@@ -17,7 +17,8 @@
 package io.fireflysoftware.experience.payments.web;
 
 import io.fireflysoftware.experience.payments.DomainPaymentsPort;
-import io.fireflysoftware.experience.payments.PaymentJourney;
+import io.fireflysoftware.experience.payments.PaymentJourneyService;
+import io.fireflysoftware.experience.payments.impl.PaymentJourneyServiceImpl;
 import io.fireflysoftware.security.center.sdk.api.AccessControllerApi;
 import io.fireflysoftware.security.center.sdk.api.IdentityControllerApi;
 import io.fireflysoftware.security.center.sdk.invoker.ApiClient;
@@ -35,7 +36,7 @@ public class ExpPaymentsApplication {
 
     @Bean
     DomainPaymentsPort domainPaymentsPort(@Value("${firefly.experience.payments.domain-base-url}") String baseUrl) {
-        return new SdkDomainPaymentsAdapter(baseUrl);
+        return new SdkDomainPaymentsAdapterImpl(baseUrl);
     }
 
     @Bean
@@ -51,12 +52,12 @@ public class ExpPaymentsApplication {
     }
 
     @Bean
-    PaymentJourney paymentJourney(DomainPaymentsPort domain,
+    PaymentJourneyService paymentJourney(DomainPaymentsPort domain,
                                   IdentityControllerApi identityControllerApi,
                                   AccessControllerApi accessControllerApi) {
-        return new PaymentJourney(
-                new HttpSecurityCenterAdapters.Identity(identityControllerApi),
-                new HttpSecurityCenterAdapters.Access(accessControllerApi),
+        return new PaymentJourneyServiceImpl(
+                new HttpSecurityCenterAdapters.IdentityImpl(identityControllerApi),
+                new HttpSecurityCenterAdapters.AccessImpl(accessControllerApi),
                 domain);
     }
 

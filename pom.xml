@@ -20,6 +20,7 @@
     <modules>
         <module>exp-payments-core</module>
         <module>exp-payments-web</module>
+        <module>exp-payments-sdk</module>
     </modules>
 
     <properties>
@@ -47,6 +48,11 @@
             <dependency>
                 <groupId>io.fireflysoftware</groupId>
                 <artifactId>exp-payments-web</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.fireflysoftware</groupId>
+                <artifactId>exp-payments-sdk</artifactId>
                 <version>${project.version}</version>
             </dependency>
         </dependencies>

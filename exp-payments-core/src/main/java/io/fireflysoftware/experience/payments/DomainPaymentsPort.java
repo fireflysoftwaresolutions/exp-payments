@@ -19,7 +19,7 @@ package io.fireflysoftware.experience.payments;
 import java.util.UUID;
 
 /**
- * The only port the journey calls. {@code SdkDomainPaymentsAdapter} is the adapter a future BPM replaces.
+ * The only port the journey calls. {@code SdkDomainPaymentsAdapterImpl} is the adapter a future BPM replaces.
  * It calls {@code domain-payments-sdk}. It does not import the ledger, library-rails, library-psps,
  * the payments core SDK, or the domain coordinator.
  */

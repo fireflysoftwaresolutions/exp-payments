@@ -37,11 +37,11 @@ final class HttpSecurityCenterAdapters {
     private HttpSecurityCenterAdapters() {
     }
 
-    static final class Identity implements IdentityPort {
+    static final class IdentityImpl implements IdentityPort {
 
         private final IdentityControllerApi api;
 
-        Identity(IdentityControllerApi api) {
+        IdentityImpl(IdentityControllerApi api) {
             this.api = api;
         }
 
@@ -65,11 +65,11 @@ final class HttpSecurityCenterAdapters {
         }
     }
 
-    static final class Access implements AccessPort {
+    static final class AccessImpl implements AccessPort {
 
         private final AccessControllerApi api;
 
-        Access(AccessControllerApi api) {
+        AccessImpl(AccessControllerApi api) {
             this.api = api;
         }
 

@@ -1,3 +1,7 @@
+spring:
+  application:
+    name: exp-payments
+
 server:
   port: ${SERVER_PORT:8102}
 
@@ -7,6 +11,22 @@ api-configuration:
       base-path: ${SECURITY_CENTER_URL:http://localhost:8085}
 
 firefly:
+  security:
+    resource-server:
+      strict-policy: ${MANAGED_PAYMENTS_STRICT_POLICY:true}
   experience:
     payments:
       domain-base-url: ${PAYMENTS_DOMAIN_URL:http://localhost:8092}
+
+managed-payments:
+  security:
+    issuer: ${MANAGED_PAYMENTS_ISSUER:}
+    audience: ${MANAGED_PAYMENTS_AUDIENCE:}
+    jwk-set-uri: ${MANAGED_PAYMENTS_JWK_SET_URI:}
+  delegation:
+    mode: ${MANAGED_PAYMENTS_DELEGATION_MODE:unconfigured}
+  peers:
+    domain:
+      base-url: ${MANAGED_PAYMENTS_DOMAIN_URL:}
+      audience: ${MANAGED_PAYMENTS_DOMAIN_AUDIENCE:}
+  allow-loopback-http: ${MANAGED_PAYMENTS_ALLOW_LOOPBACK_HTTP:false}
