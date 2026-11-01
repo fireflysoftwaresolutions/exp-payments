@@ -73,7 +73,7 @@ class SdkDomainPaymentsAdapterTest {
                                         .paymentId(paymentId)
                                         .phase(MovementResult.PhaseEnum.CONFIRMED)
                                         .status(MovementResult.StatusEnum.COMPLETED)));
-        SdkDomainPaymentsAdapter adapter = new SdkDomainPaymentsAdapter(api);
+        SdkDomainPaymentsAdapterImpl adapter = new SdkDomainPaymentsAdapterImpl(api);
         JourneyContract.Request request =
                 new JourneyContract.Request(
                         JourneyContract.Scheme.DOMESTIC_OUTBOUND,
@@ -114,7 +114,7 @@ class SdkDomainPaymentsAdapterTest {
     void everyNativeEnumMapsWithoutFallbackOrLossOfPhaseFailure() {
         var api = mock(PaymentsApi.class);
         var id = UUID.randomUUID();
-        var adapter = new SdkDomainPaymentsAdapter(api);
+        var adapter = new SdkDomainPaymentsAdapterImpl(api);
         for (var value : MovementResult.StatusEnum.values()) {
             when(api.readPayment(any(), any()))
                     .thenReturn(Mono.just(new MovementResult().paymentId(id).status(value)));
@@ -148,7 +148,7 @@ class SdkDomainPaymentsAdapterTest {
         var id = UUID.randomUUID();
         when(api.readPayment(any(), any()))
                 .thenReturn(Mono.just(new MovementResult().paymentId(id)));
-        var result = new SdkDomainPaymentsAdapter(api).readStatus(id);
+        var result = new SdkDomainPaymentsAdapterImpl(api).readStatus(id);
         assertNull(result.status());
         assertNull(result.scheme());
         assertNull(result.route());
@@ -178,7 +178,7 @@ class SdkDomainPaymentsAdapterTest {
             when(api.readPayment(any(), any()))
                     .thenReturn(Mono.just(new MovementResult().paymentId(id).posting(posting)));
             var mapped =
-                    new SdkDomainPaymentsAdapter(api).readStatus(id).posting().legs().getFirst();
+                    new SdkDomainPaymentsAdapterImpl(api).readStatus(id).posting().legs().getFirst();
             assertEquals(side.getValue(), mapped.side().name());
             assertEquals(account, mapped.accountId());
             assertEquals(new BigDecimal("10.00"), mapped.amount());
@@ -188,7 +188,7 @@ class SdkDomainPaymentsAdapterTest {
     @Test
     void everyInputSchemeUsesTheGenuineTypedCommand() {
         var api = mock(PaymentsApi.class);
-        var adapter = new SdkDomainPaymentsAdapter(api);
+        var adapter = new SdkDomainPaymentsAdapterImpl(api);
         when(api.tryPayment(any(), any()))
                 .thenReturn(Mono.just(new MovementResult().paymentId(UUID.randomUUID())));
         for (var scheme : JourneyContract.Scheme.values())

@@ -72,7 +72,7 @@ class SdkManagedDomainPaymentsReversalTest {
         });
         server.start();
         try {
-            var adapter = new SdkManagedDomainPaymentsAdapter(tokens,
+            var adapter = new SdkManagedDomainPaymentsAdapterImpl(tokens,
                     "http://127.0.0.1:" + server.getAddress().getPort(), "domain", true);
             var result = adapter.decide("owned", before, new Decision(action, 8, DecisionKind.REVERSE))
                     .contextWrite(context -> ManagedPaymentContext.with(context, caller))

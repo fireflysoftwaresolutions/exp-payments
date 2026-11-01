@@ -32,12 +32,12 @@ import java.time.*;
 import java.util.*;
 import java.util.function.Supplier;
 
-public final class SdkManagedDomainPaymentsAdapter implements ManagedDomainPaymentsPort {
+public final class SdkManagedDomainPaymentsAdapterImpl implements ManagedDomainPaymentsPort {
     private final ManagedPaymentDelegationPort delegation;
     private final String base, audience;
     private final boolean loopback;
 
-    public SdkManagedDomainPaymentsAdapter(
+    public SdkManagedDomainPaymentsAdapterImpl(
             ManagedPaymentDelegationPort delegation,
             String base,
             String audience,
@@ -156,7 +156,7 @@ public final class SdkManagedDomainPaymentsAdapter implements ManagedDomainPayme
                 () ->
                         existing(tenant)
                                 .flatMap(api -> api.getManagedPaymentJourney(tenant, payment))
-                                .map(SdkManagedDomainPaymentsAdapter::view));
+                                .map(SdkManagedDomainPaymentsAdapterImpl::view));
     }
 
     @Override
@@ -201,7 +201,7 @@ public final class SdkManagedDomainPaymentsAdapter implements ManagedDomainPayme
                                                                                                 .name()))
                                                                 .expectedVersion(
                                                                         in.expectedVersion())))
-                                .map(SdkManagedDomainPaymentsAdapter::view));
+                                .map(SdkManagedDomainPaymentsAdapterImpl::view));
     }
 
     @Override
@@ -229,7 +229,7 @@ public final class SdkManagedDomainPaymentsAdapter implements ManagedDomainPayme
                                                                 .actionId(in.actionId())
                                                                 .expectedVersion(
                                                                         in.expectedVersion())))
-                                .map(SdkManagedDomainPaymentsAdapter::view));
+                                .map(SdkManagedDomainPaymentsAdapterImpl::view));
     }
 
     @Override

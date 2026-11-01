@@ -39,7 +39,7 @@ class PaymentJourneyTest {
     @Test
     void sampleJourneyConfirmsOutboundWithTheDeliveredChallenge() {
         RecordingPort port = new RecordingPort();
-        PaymentJourneyService journey = new PaymentJourneyServiceImpl(new SandboxIdentityAdapter(), new SandboxAccessAdapter(), port);
+        PaymentJourneyService journey = new PaymentJourneyServiceImpl(new SandboxIdentityAdapterImpl(), new SandboxAccessAdapterImpl(), port);
         JourneyContract.TryResult tried = journey.tryPayment(IdentityPort.SAMPLE_USERNAME, outbound());
         assertNotNull(tried.challengeId());
         assertNotEquals("sandbox", tried.challengeValue());
@@ -56,7 +56,7 @@ class PaymentJourneyTest {
     @Test
     void internalTryHasNoChallenge() {
         RecordingPort port = new RecordingPort();
-        PaymentJourneyService journey = new PaymentJourneyServiceImpl(new SandboxIdentityAdapter(), new SandboxAccessAdapter(), port);
+        PaymentJourneyService journey = new PaymentJourneyServiceImpl(new SandboxIdentityAdapterImpl(), new SandboxAccessAdapterImpl(), port);
         JourneyContract.TryResult tried = journey.tryPayment(IdentityPort.SAMPLE_USERNAME, internal());
         assertNull(tried.challengeId());
         assertNull(tried.challengeValue());
@@ -65,7 +65,7 @@ class PaymentJourneyTest {
     @Test
     void deniedActorNeverReachesTry() {
         RecordingPort port = new RecordingPort();
-        PaymentJourneyService journey = new PaymentJourneyServiceImpl(new SandboxIdentityAdapter(), new SandboxAccessAdapter(), port);
+        PaymentJourneyService journey = new PaymentJourneyServiceImpl(new SandboxIdentityAdapterImpl(), new SandboxAccessAdapterImpl(), port);
         AccessDeniedException denied = assertThrows(AccessDeniedException.class,
                 () -> journey.tryPayment(IdentityPort.DENIED_USERNAME, outbound()));
         assertEquals("ACTOR_NOT_ENTITLED", denied.getMessage());

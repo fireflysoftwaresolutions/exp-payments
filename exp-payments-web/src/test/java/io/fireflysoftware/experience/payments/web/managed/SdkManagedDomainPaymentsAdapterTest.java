@@ -173,7 +173,7 @@ class SdkManagedDomainPaymentsAdapterTest {
         try {
             var type =
                     Class.forName(
-                            "io.fireflysoftware.experience.payments.web.managed.ManagedExperienceDelegationAdapter");
+                            "io.fireflysoftware.experience.payments.web.managed.ManagedExperienceDelegationAdapterImpl");
             return (Mono<String>)
                     type.getMethod("token", String.class, String.class, Set.class, Set.class)
                             .invoke(
@@ -305,7 +305,7 @@ class SdkManagedDomainPaymentsAdapterTest {
         try {
             return (ManagedDomainPaymentsPort)
                     Class.forName(
-                                    "io.fireflysoftware.experience.payments.web.managed.SdkManagedDomainPaymentsAdapter")
+                                    "io.fireflysoftware.experience.payments.web.managed.SdkManagedDomainPaymentsAdapterImpl")
                             .getConstructor(
                                     ManagedPaymentDelegationPort.class,
                                     String.class,
@@ -368,7 +368,7 @@ class SdkManagedDomainPaymentsAdapterTest {
                         .ledgerState("ABSENT_CLOSED");
         var type =
                 Class.forName(
-                        "io.fireflysoftware.experience.payments.web.managed.SdkManagedDomainPaymentsAdapter");
+                        "io.fireflysoftware.experience.payments.web.managed.SdkManagedDomainPaymentsAdapterImpl");
         var method = type.getDeclaredMethod("view", value.getClass());
         method.setAccessible(true);
         var mapped = (View) method.invoke(null, value);
@@ -427,12 +427,12 @@ class SdkManagedDomainPaymentsAdapterTest {
                                         org.fireflyframework.security.api.domain.Decision.permit()),
                         true)) {
             assertThat(context.getBean(ManagedDomainPaymentsPort.class).getClass().getSimpleName())
-                    .isEqualTo("SdkManagedDomainPaymentsAdapter");
+                    .isEqualTo("SdkManagedDomainPaymentsAdapterImpl");
             assertThat(
                             context.getBean(ManagedPaymentDelegationPort.class)
                                     .getClass()
                                     .getSimpleName())
-                    .isEqualTo("ManagedExperienceDelegationAdapter");
+                    .isEqualTo("ManagedExperienceDelegationAdapterImpl");
             assertThatThrownBy(
                             () ->
                                     actor(

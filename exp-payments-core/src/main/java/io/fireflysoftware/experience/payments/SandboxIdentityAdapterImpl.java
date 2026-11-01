@@ -16,7 +16,7 @@
 
 package io.fireflysoftware.experience.payments;
 
-public final class SandboxIdentityAdapter implements IdentityPort {
+public final class SandboxIdentityAdapterImpl implements IdentityPort {
 
     @Override
     public Subject resolve(String username) {

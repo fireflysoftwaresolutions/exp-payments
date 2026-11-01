@@ -33,7 +33,7 @@ public class ManagedPaymentsExperienceWiring {
     @ConditionalOnMissingBean(ManagedPaymentDelegationPort.class)
     ManagedPaymentDelegationPort managedExperienceDelegation(
             @Value("${managed-payments.delegation.mode:unconfigured}") String mode) {
-        return new ManagedExperienceDelegationAdapter(mode);
+        return new ManagedExperienceDelegationAdapterImpl(mode);
     }
 
     @Bean
@@ -43,7 +43,7 @@ public class ManagedPaymentsExperienceWiring {
             @Value("${managed-payments.peers.domain.base-url:}") String base,
             @Value("${managed-payments.peers.domain.audience:}") String audience,
             @Value("${managed-payments.allow-loopback-http:false}") boolean loopback) {
-        return new SdkManagedDomainPaymentsAdapter(delegation, base, audience, loopback);
+        return new SdkManagedDomainPaymentsAdapterImpl(delegation, base, audience, loopback);
     }
 
     @Bean

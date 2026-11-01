@@ -25,10 +25,10 @@ import reactor.core.publisher.Mono;
 import java.util.Set;
 import java.util.UUID;
 
-public final class ManagedExperienceDelegationAdapter implements ManagedPaymentDelegationPort {
+public final class ManagedExperienceDelegationAdapterImpl implements ManagedPaymentDelegationPort {
     private final String mode;
 
-    public ManagedExperienceDelegationAdapter(String mode) {
+    public ManagedExperienceDelegationAdapterImpl(String mode) {
         this.mode = mode;
     }
 

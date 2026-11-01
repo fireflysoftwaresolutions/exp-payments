@@ -36,7 +36,7 @@ public class ExpPaymentsApplication {
 
     @Bean
     DomainPaymentsPort domainPaymentsPort(@Value("${firefly.experience.payments.domain-base-url}") String baseUrl) {
-        return new SdkDomainPaymentsAdapter(baseUrl);
+        return new SdkDomainPaymentsAdapterImpl(baseUrl);
     }
 
     @Bean
@@ -56,8 +56,8 @@ public class ExpPaymentsApplication {
                                   IdentityControllerApi identityControllerApi,
                                   AccessControllerApi accessControllerApi) {
         return new PaymentJourneyServiceImpl(
-                new HttpSecurityCenterAdapters.Identity(identityControllerApi),
-                new HttpSecurityCenterAdapters.Access(accessControllerApi),
+                new HttpSecurityCenterAdapters.IdentityImpl(identityControllerApi),
+                new HttpSecurityCenterAdapters.AccessImpl(accessControllerApi),
                 domain);
     }
 

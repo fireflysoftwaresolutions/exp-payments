@@ -37,19 +37,19 @@ import java.util.UUID;
  * Calls the payments domain through {@code domain-payments-sdk}. A future BPM replaces this
  * adapter. It does not call the payment core, the ledger, or a hand-written HTTP client.
  */
-public final class SdkDomainPaymentsAdapter implements DomainPaymentsPort {
+public final class SdkDomainPaymentsAdapterImpl implements DomainPaymentsPort {
 
     private static final Duration TIMEOUT = Duration.ofSeconds(30);
 
     private final PaymentsApi api;
 
-    public SdkDomainPaymentsAdapter(String baseUrl) {
+    public SdkDomainPaymentsAdapterImpl(String baseUrl) {
         ApiClient client = new ApiClient();
         client.setBasePath(strip(baseUrl));
         this(new PaymentsApi(client));
     }
 
-    public SdkDomainPaymentsAdapter(PaymentsApi api) {
+    public SdkDomainPaymentsAdapterImpl(PaymentsApi api) {
         this.api = api;
     }
 

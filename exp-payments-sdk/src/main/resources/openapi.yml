@@ -11,7 +11,7 @@ info:
     url: https://www.apache.org/licenses/LICENSE-2.0
   version: 1.0.0
 servers:
-- url: http://localhost:57953
+- url: http://localhost:58749
   description: Local Development Server
 paths:
   /api/v1/tenants/{tenant}/internal-payments/{paymentId}/recovery:
